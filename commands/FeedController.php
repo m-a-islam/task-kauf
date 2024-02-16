@@ -36,8 +36,12 @@ class FeedController extends Controller
             } else {
                 $this->updateTableColumns($xmlData, $tableName);
             }
-            $this->pushDataToDatabase($xmlData, $tableName);
-            $this->stdout("Table and data imported successfully.\n", BaseConsole::FG_GREEN);
+            $insertedRows = $this->pushDataToDatabase($xmlData, $tableName);
+            if ($insertedRows > 0) {
+                $this->stdout("Table and data imported successfully.\n", BaseConsole::FG_GREEN);
+            } else {
+                $this->stdout("Warning: No new data inserted. Data already exists.\n", BaseConsole::FG_YELLOW);
+            }
             return ExitCode::OK;
         } catch (\Exception $e) {
             $this->handleError($e);
@@ -167,18 +171,24 @@ class FeedController extends Controller
 
 
     /**
+     * @param $xmlData
+     * @param $tableName
+     * @return int
      * @throws Exception
      */
-    protected function pushDataToDatabase($xmlData, $tableName): void
+    protected function pushDataToDatabase($xmlData, $tableName): int
     {
         try {
             $tableColumns = array_keys(get_object_vars($xmlData->item[0]));
+            $insertedRows = 0;
             foreach ($xmlData->item as $itemData) {
                 $dataToInsert = array_intersect_key((array)$itemData, array_flip($tableColumns));
                 if (!$this->dataExists($tableName, $dataToInsert)) {
                     Yii::$app->db->createCommand()->insert($tableName, $dataToInsert)->execute();
+                    $insertedRows++;
                 }
             }
+            return $insertedRows;
         } catch (\Exception $e) {
             $this->handleError($e);
             throw $e;

@@ -9,11 +9,9 @@ use yii\helpers\FileHelper;
 
 class ProcessDataCommandCest
 {
+    private string $xmlPath;
 
-
-    private $xmlPath;
-
-    public function _before(FunctionalTester $I)
+    public function _before(FunctionalTester $I): void
     {
         // Copy the sample XML file to the tests directory
         $this->xmlPath = codecept_data_dir('test_feed.xml');
@@ -25,7 +23,7 @@ class ProcessDataCommandCest
 
     }
 
-    public function _after(FunctionalTester $I)
+    public function _after(FunctionalTester $I): void
     {
         $xmlData = simplexml_load_file($this->xmlPath);
         $tableName = $this->getTableNameFromXml($xmlData);
@@ -52,8 +50,6 @@ class ProcessDataCommandCest
         $exitCode = $feedController->actionData($this->xmlPath);
         // Check if the actionData function executed successfully (ExitCode::OK)
         $I->assertEquals(ExitCode::OK, $exitCode, 'ActionData did not execute successfully');
-
-        //$I->assertStringContainsString('Table and data imported successfully', $output);
 
         // Get the table name from the XML file
         $xmlData = simplexml_load_file($this->xmlPath);
