@@ -2,6 +2,7 @@
 namespace functional;
 use app\commands\FeedController;
 use Codeception\Util\Stub;
+use Exception;
 use FunctionalTester;
 use Yii;
 use yii\console\ExitCode;
@@ -25,6 +26,11 @@ class ProcessDataCommandCest
 
     public function _after(FunctionalTester $I): void
     {
+        $this->rollbackDatabase($I);
+    }
+
+    private function rollbackDatabase(FunctionalTester $I): void
+    {
         $xmlData = simplexml_load_file($this->xmlPath);
         $tableName = $this->getTableNameFromXml($xmlData);
 
@@ -35,21 +41,22 @@ class ProcessDataCommandCest
                 Yii::$app->db->createCommand()->dropTable($tableName)->execute();
                 $I->comment("Table '$tableName' has been deleted.");
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $I->comment("Error deleting table '$tableName': " . $e->getMessage());
         }
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
-    public function testActionDataCreatesTable(FunctionalTester $I)
+    public function testActionDataCreatesTable(FunctionalTester $I): void
     {
         // Run the actionData function
         $feedController = new FeedController('feed', Yii::$app);
-        $exitCode = $feedController->actionData($this->xmlPath);
+        $result = $feedController->actionData($this->xmlPath);
         // Check if the actionData function executed successfully (ExitCode::OK)
-        $I->assertEquals(ExitCode::OK, $exitCode, 'ActionData did not execute successfully');
+        $I->assertEquals(ExitCode::OK, $result->exitCode);
+        $I->assertStringContainsString(FeedController::SUCCESS_MESSAGE, $result->message);
 
         // Get the table name from the XML file
         $xmlData = simplexml_load_file($this->xmlPath);
@@ -60,7 +67,26 @@ class ProcessDataCommandCest
 
         // Assert that the table exists
         $I->assertTrue($tableExists, "Table $tableName should exist.");
+        $this->rollbackDatabase($I);
     }
+
+    /**
+     * @throws Exception
+     */
+    public function testCheckWarningMessage(FunctionalTester $I): void
+    {
+        $expectedMessage = FeedController::ALREADY_EXIST_WARNING_MESSAGE;
+        // Run the actionData function
+        $feedController = new FeedController('feed', Yii::$app);
+        $result = $feedController->actionData($this->xmlPath);
+        $result = $feedController->actionData($this->xmlPath);
+        // Check if the actionData function executed successfully (ExitCode::OK)
+        $I->assertEquals(ExitCode::OK, $result->exitCode);
+        $I->assertStringContainsString($expectedMessage, $result->message);
+    }
+
+
+
 
     protected function getTableNameFromXml($xmlData): string
     {

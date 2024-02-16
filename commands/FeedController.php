@@ -2,6 +2,7 @@
 
 namespace app\commands;
 
+use helpers\CommandHelper;
 use SimpleXMLElement;
 use Yii;
 use yii\console\Controller;
@@ -14,20 +15,19 @@ use yii\log\Logger;
 
 class FeedController extends Controller
 {
-    //public string $xmlFilePath = 'feed-data/feed.xml';
-    public string $tableName = 'dynamic_table';
-
+    const ALREADY_EXIST_WARNING_MESSAGE = "Warning: No new data inserted. Data already exists.";
+    const SUCCESS_MESSAGE = "Table and data imported successfully.";
     /**
      * @throws \Exception
      * @var string $xmlPath
-     * @return int
+     * @return CommandHelper
      */
-    public function actionData(string $xmlPath = ''): int
+    public function actionData(string $xmlPath = ''): CommandHelper
     {
         try {
             if (empty($xmlPath)) {
                 $this->stderr("Error: XML path is required.\n", BaseConsole::FG_RED);
-                return ExitCode::CONFIG;
+                return new CommandHelper(ExitCode::CONFIG, "Error: XML path is required.");
             }
             $xmlData = $this->loadXmlData($xmlPath);
             $tableName = $this->getTableNameFromXml($xmlData);
@@ -38,14 +38,15 @@ class FeedController extends Controller
             }
             $insertedRows = $this->pushDataToDatabase($xmlData, $tableName);
             if ($insertedRows > 0) {
-                $this->stdout("Table and data imported successfully.\n", BaseConsole::FG_GREEN);
+                $this->stdout(self::SUCCESS_MESSAGE . "\n", BaseConsole::FG_GREEN);
+                return new CommandHelper(ExitCode::OK, self::SUCCESS_MESSAGE);
             } else {
-                $this->stdout("Warning: No new data inserted. Data already exists.\n", BaseConsole::FG_YELLOW);
+                $this->stdout(self::ALREADY_EXIST_WARNING_MESSAGE . "\n", BaseConsole::FG_YELLOW);
+                return new CommandHelper(ExitCode::OK, self::ALREADY_EXIST_WARNING_MESSAGE);
             }
-            return ExitCode::OK;
         } catch (\Exception $e) {
             $this->handleError($e);
-            return ExitCode::UNSPECIFIED_ERROR;
+            return new CommandHelper(ExitCode::UNSPECIFIED_ERROR, $e->getMessage());
         }
     }
     protected function handleError(\Exception $e): void
@@ -132,7 +133,6 @@ class FeedController extends Controller
             $tableSchema = Yii::$app->db->schema->getTableSchema($tableName);
 
             if ($tableSchema === null) {
-                // Table does not exist, handle accordingly
                 return;
             }
 
@@ -164,7 +164,7 @@ class FeedController extends Controller
             }
         }catch (\Exception $e) {
             $this->handleError($e);
-            throw $e; // Re-throw the exception for further handling
+            throw $e;
         }
 
     }
@@ -231,7 +231,7 @@ class FeedController extends Controller
             return in_array($tableName, $schema->getTableNames());
         }catch (\Exception $e) {
             $this->handleError($e);
-            throw $e; // Re-throw the exception for further handling
+            throw $e;
         }
     }
 }
