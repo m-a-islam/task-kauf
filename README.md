@@ -133,3 +133,16 @@ Edit the file `config/test_db.php` with real data, for example:
 ```php
 $db['dsn'] = 'mysql:host=localhost;dbname=test_inventory-management';
 ```
+
+### Error-logs
+Error log can be found on the provided directory
+```
+runtime/logs/import-errors.log
+```
+
+### Extendability of the Code based on file-type and database
+
+This application can be extended based on the file type.
+I have fully implemented the code for the xml file type. and Provided hints for the csv file type.
+and based on the configuration of database, this also be possible to extend/save data to any type of database.
+Only need to change the db.php file accordingly.
