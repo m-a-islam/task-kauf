@@ -47,20 +47,6 @@ class FeedController extends Controller
         }
     }
 
-    /**
-     * Check if the file has an XML MIME type.
-     *
-     * @param string $filePath
-     * @return bool
-     */
-    private function isXmlFile(string $filePath): bool
-    {
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
-        $mimeType = $finfo->file($filePath);
-        return $mimeType === 'text/xml' || $mimeType === 'application/xml';
-    }
-
-
 
     /**
      * Detect the file type based on the file extension.

@@ -5,11 +5,10 @@ namespace app\helpers;
 use Exception;
 use SimpleXMLElement;
 use Yii;
-use yii\console\Controller;
 use yii\db\Migration;
 use yii\db\Query;
 
-class XmlFileHelper extends Controller
+class XmlFileHelper
 {
     /**
      * @throws Exception
