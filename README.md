@@ -61,12 +61,19 @@ Edit the file `config/db.php` with real data, for example:
 ```php
 return [
     'class' => 'yii\db\Connection',
-    'dsn' => 'mysql:host=localhost;dbname=yii2basic',
-    'username' => 'root',
-    'password' => '1234',
+    'dsn' => 'mysql:host=localhost;dbname=inventory-management',
+    'username' => 'admin',
+    'password' => 'pass',
     'charset' => 'utf8',
 ];
 ```
+
+**Important**
+1. Please goto the database of your localhost
+2. and create new database named with 'inventory-management'
+3. then create user with name admin(any-name-you-want) password='your-wish', keep in mind to change accordingly in the `config/db.php` directory
+4. check all privileges to that created user, and save.
+5. good to go.
 
 **NOTES:**
 - Yii won't create the database for you, this has to be done manually before you can access it.
@@ -117,4 +124,12 @@ from the command line / terminal run the command:
 
 ```
 vendor/bin/codecept run functional
+```
+
+### Test-Database configuration
+
+Edit the file `config/test_db.php` with real data, for example:
+
+```php
+$db['dsn'] = 'mysql:host=localhost;dbname=test_inventory-management';
 ```
