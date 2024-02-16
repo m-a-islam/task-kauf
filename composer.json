@@ -21,7 +21,8 @@
         "symfony/yaml": "^3.4",
         "symfony/console": "^3.4",
         "yiisoft/yii2-httpclient": "^2.0",
-      "ext-simplexml": "*"
+      "ext-simplexml": "*",
+        "ext-fileinfo": "*"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.1.0",
