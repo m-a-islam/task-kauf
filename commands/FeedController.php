@@ -52,9 +52,7 @@ class FeedController extends Controller
     protected function handleError(\Exception $e): void
     {
         $errorMessage = "Error: " . $e->getMessage() . "\n" . "File: " . $e->getFile() . "\n" . "Line: " . $e->getLine();
-        //$this->stderr($errorMessage, BaseConsole::FG_RED);
 
-        // Log the error to a file
         $logger = Yii::getLogger();
         $logger->log($errorMessage, Logger::LEVEL_ERROR, 'import-errors');
     }
@@ -65,9 +63,8 @@ class FeedController extends Controller
     protected function getTableNameFromXml($xmlData): array|string|null
     {
         try{
-        // Get the first tag name from the XML data
         $firstTag = $xmlData->getName();
-        // Sanitize the tag name to make it a valid table name
+
         $tableName = preg_replace('/[^a-zA-Z0-9_]/', '_', $firstTag);
         return $tableName;
         } catch (\Exception $e) {
@@ -100,7 +97,7 @@ class FeedController extends Controller
     {
         try {
             $migration = new Migration();
-            $tableOptions = null; // You may customize this based on your database engine and requirements
+            $tableOptions = null;
 
             $migration->createTable($tableName, [
                 'id' => $migration->primaryKey(),
@@ -145,9 +142,8 @@ class FeedController extends Controller
                 $migration = new Migration();
 
                 foreach ($missingColumns as $columnName) {
-                    // Check if the column already exists (case-insensitive comparison)
+
                     if (!in_array(strtolower($columnName), $existingColumns)) {
-                        // Define appropriate MySQL data types based on the XML data types
                         $elementValue = $xmlData->item[0]->$columnName;
                         if (is_int($elementValue)) {
                             $migration->addColumn($tableName, $columnName, $migration->integer());
@@ -159,7 +155,6 @@ class FeedController extends Controller
                     }
                 }
 
-                // Refresh the table schema after adding new columns
                 $tableSchema = Yii::$app->db->schema->getTableSchema($tableName);
             }
         }catch (\Exception $e) {
